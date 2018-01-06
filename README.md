@@ -10,17 +10,14 @@ const cog = new HttpCog({
   plugin: receiver
 })
 
-cog.listen(({
-  plugin,
-  buffer
-}) => {
-  await buffer(1010)
+cog.listen((accountant) => {
+  await accountant.awaitBalance(1010)
 
   const result = await agent
     .get('paid.example.com')
-    .pay(plugin, 1000)
+    .pay(accountant, 1000)
 
-  await ILP.SPSP.SendPayment({
+  await ILP.SPSP.SendPayment(accountant, {
     receiver: process.env.DEVELOPER_RECEIVER,
     sourceAmount: 10
   })

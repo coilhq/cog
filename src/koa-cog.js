@@ -1,40 +1,61 @@
 const crypto = require('crypto')
 const debug = require('debug')('ilp-cog-koa')
+const ILDCP = require('ilp-protocol-ildcp')
+const PSK2 = require('ilp-psk2')
+const CogListener = require('./listener')
 
 class CogKoa {
   constructor (opts) {
-    // this.secret = crypto.randomBytes(32)
-    // TODO: moneyd
-    // this.plugin = opts && opts.plugin
+    this.listener = new CogListener(opts)
+    this.connected = false
   }
 
-  _getPskDetails () {
-    // TODO: for real
-    return 'interledger-ksk2 VwdiSrgYRZBtDct7YsZVfm476Q_JFsgmmLlMBLAj5E8'
+  async _getPskDetails () {
+    if (!this.connected) {
+      await this.listener.listen()
+      this.connected = true
+    }
+
+    // TODO: only do this once
+    const address = ILDCP
+      .fetch(d => this.listener.plugin.sendData(d))
+      .clientAddress
+
+    // TODO: generate secret here and pass into listener
+    const params = PSK2.generateParams({
+      destinationAccount: address,
+      receiverSecret: this.listener.secret
+    })
+
+    return 'interledger-psk2 ' +
+      params.destinationAccount + ' ' +
+      params.sharedSecret
   }
 
   options () {
     return async (ctx, next) => {
-      ctx.set('Pay', this._getPskDetails())
+      ctx.set('Pay', await this._getPskDetails())
       return next()
-    } 
+    }
   }
 
   paid () {
     return async (ctx, next) => {
-      const paymentId = ctx.get('Pay-Token')
-      if (!paymentId) {
+      const payToken = ctx.get('Pay-Token')
+      if (!payToken) {
         ctx.throw(400, 'must supply `Pay-Token` header.')
         return
       }
 
-      ctx.accountant = {
-        getValue: async (v) => {
-          return new Promise((resolve) => setTimeout(resolve.bind(null, v), 100))
-        }
-      } // this.listener.getAccountant(id)
+      debug('parsing pay-token. token=', payToken)
+      const id = Buffer.from(payToken, 'base64')
+      if (id.length !== 16) {
+        ctx.throw(400, '`Pay-Token` must be 16 bytes. length=' +
+          id.length + ' token=' + payToken)
+      }
 
-      debug('next')
+      debug('creating accountant. token=', payToken)
+      ctx.accountant = this.listener.getAccountant(id)
       return next()
     }
   }

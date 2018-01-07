@@ -6,7 +6,8 @@ const app = new Koa()
 const cog = new CogKoa()
 const debug = require('debug')('app')
 
-router.get('/', cog.cog(), async ctx => {
+router.options('/', cog.options())
+router.get('/', cog.paid(), async ctx => {
   debug('main middleware')
   const foo = await ctx.accountant.getValue('bar')
   const bar = await ctx.accountant.getValue('baz')

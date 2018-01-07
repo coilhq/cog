@@ -12,7 +12,8 @@ class CogListener {
     this.accountants = new Map()
   }
 
-  async getAccountant (hexId) {
+  async getAccountant (id) {
+    const hexId = id.toString('hex')
     let accountant = this.accountants.get(hexId)
     if (!accountant) {
       accountant = new CogAccountant({ plugin: this.plugin })
@@ -34,13 +35,6 @@ class CogListener {
       if (!accountant) {
         accountant = new CogAccountant({ plugin: this.plugin })
         this.accountants.set(hexId, accountant)
-
-        // fire this off async-style, yo
-        // TODO: to where does the result of this computation go
-        callback(accountant)
-          .catch((e) => {
-            debug('error in listen callback. error=', e)
-          })
       }
 
       // TODO: clean up after reject so we don't leak memory (very important

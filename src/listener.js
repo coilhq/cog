@@ -12,6 +12,16 @@ class CogListener {
     this.accountants = new Map()
   }
 
+  async getAccountant (hexId) {
+    let accountant = this.accountants.get(hexId)
+    if (!accountant) {
+      accountant = new CogAccountant({ plugin: this.plugin })
+      this.accountants.set(hexId, accountant)
+    }
+
+    return accountant
+  }
+
   async listen (callback) {
     await this.plugin.connect()
 

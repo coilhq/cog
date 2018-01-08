@@ -32,7 +32,7 @@ async function call ({
     id,
     sourceAmount: 200,
     destinationAccount: payParams[1],
-    sharedSecret: payParams[2],
+    sharedSecret: Buffer.from(payParams[2], 'base64'),
     minDestinationAmount: 0
   }
 
@@ -53,7 +53,7 @@ async function call ({
     await PSK2.sendSingleChunk(_plugin, senderParams)
   }
 
-  return response
+  return requestPromise
 }
 
 module.exports = {

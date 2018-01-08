@@ -49,7 +49,7 @@ class CogKoa {
       }
 
       debug('creating accountant. token=', payToken)
-      ctx.accountant = this.listener.getAccountant(id)
+      ctx.accountant = await this.listener.getAccountant(id)
       return next()
     }
   }

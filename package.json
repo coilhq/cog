@@ -1,0 +1,32 @@
+{
+  "name": "cog",
+  "version": "0.0.1",
+  "description": "> A contract engine driven by streaming payments",
+  "main": "index.js",
+  "directories": {
+    "example": "examples"
+  },
+  "dependencies": {
+    "ilp-plugin-btp": "^1.1.2",
+    "ilp-protocol-ildcp": "^1.0.0",
+    "ilp-psk2": "^0.1.0",
+    "ilp": "^11.4.0",
+    "koa-bodyparser": "^4.2.0",
+    "koa": "^2.4.1",
+    "koa-router": "^7.3.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sharafian/cog.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/sharafian/cog/issues"
+  },
+  "homepage": "https://github.com/sharafian/cog#readme"
+}

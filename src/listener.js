@@ -22,6 +22,7 @@ class CogListener {
       this.accountants.set(hexId, accountant)
     }
 
+    debug('returning accountant for', id)
     return accountant
   }
 

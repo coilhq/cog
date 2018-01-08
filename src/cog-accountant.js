@@ -5,6 +5,8 @@ class CogAccountant extends EventEmitter {
   constructor ({
     plugin
   }) {
+    super()
+
     this.plugin = plugin
     this.balance = 0
   }

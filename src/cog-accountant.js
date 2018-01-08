@@ -27,6 +27,10 @@ class CogAccountant extends EventEmitter {
     await accept()
   }
 
+  // we have this so the accountant can be used as a plugin
+  async sendTransfer () {}
+  async connect () {}
+
   getBalance () {
     return this.balance
   }
@@ -73,4 +77,5 @@ class CogAccountant extends EventEmitter {
   }
 }
 
+CogAccountant.version = 2 // LPI version for compat
 module.exports = CogAccountant

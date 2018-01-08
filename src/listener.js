@@ -29,6 +29,11 @@ class CogListener {
 
   async cleanUpAccountant (id) {
     // TODO
+    const hexId = id.toString('hex')
+    let accountant = this.accountants.get(hexId)
+    if (accountant) {
+      return accountant.disconnect()
+    }
   }
 
   getPskDetails () {
@@ -38,7 +43,7 @@ class CogListener {
   async listen (callback) {
     debug('registering payment handler')
     this.receiver.registerPaymentHandler(async (params) => {
-      debug('got payment chunk. amount=', params.prepare.data.amount)
+      debug('got payment chunk. amount=' + params.prepare.amount)
       const hexId = params.paymentId.toString('hex')
 
       let accountant = this.accountants.get(hexId)

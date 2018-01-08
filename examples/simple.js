@@ -9,14 +9,10 @@ const debug = require('debug')('app')
 router.options('/', cog.options())
 router.get('/', cog.paid(), async ctx => {
   debug('main middleware')
-  const foo = await ctx.accountant.getValue('bar')
-  const bar = await ctx.accountant.getValue('baz')
+  await ctx.accountant.awaitBalance(10)
 
   debug('sending response body')
-  ctx.body = {
-    foo,
-    bar
-  }
+  ctx.body = { foo: 'bar' }
 })
 
 app

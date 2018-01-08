@@ -70,3 +70,5 @@ class CogAccountant extends EventEmitter {
     this.close = true
   }
 }
+
+module.exports = CogAccountant

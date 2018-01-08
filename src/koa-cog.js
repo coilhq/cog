@@ -12,24 +12,18 @@ class CogKoa {
 
   async _getPskDetails () {
     if (!this.connected) {
+      debug('connecting listener')
       await this.listener.listen()
       this.connected = true
     }
 
     // TODO: only do this once
-    const address = ILDCP
-      .fetch(d => this.listener.plugin.sendData(d))
-      .clientAddress
-
-    // TODO: generate secret here and pass into listener
-    const params = PSK2.generateParams({
-      destinationAccount: address,
-      receiverSecret: this.listener.secret
-    })
+    debug('generating psk2 params')
+    const params = this.listener.getPskDetails()
 
     return 'interledger-psk2 ' +
       params.destinationAccount + ' ' +
-      params.sharedSecret
+      params.sharedSecret.toString('base64')
   }
 
   options () {

@@ -1,4 +1,5 @@
 const PSK2 = require('ilp-psk2')
+const crypto = require('crypto')
 const CogAccountant = require('./cog-accountant')
 const PluginBtp = require('ilp-plugin-btp')
 const debug = require('debug')('ilp-cog-listener')
@@ -8,8 +9,9 @@ class CogListener {
     this.secret = crypto.randomBytes(32)
     // TODO: moneyd
     this.plugin = (opts && opts.plugin) ||
-      new PluginBtp('btp+ws://localhost:7768')
+      new PluginBtp({ server: 'btp+ws://:secret@localhost:7768' })
     this.accountants = new Map()
+    this.receiver = new PSK2.Receiver(this.plugin, this.secret)
   }
 
   async getAccountant (id) {
@@ -23,12 +25,14 @@ class CogListener {
     return accountant
   }
 
-  async listen (callback) {
-    await this.plugin.connect()
+  getPskDetails () {
+    return this.receiver.generateAddressAndSecret()
+  }
 
-    this.stopListening = PSK2.listen(this.plugin, {
-      receiverSecret: this.secret
-    }, async (params) => {
+  async listen (callback) {
+    debug('registering payment handler')
+    this.receiver.registerPaymentHandler(async (params) => {
+      debug('got payment chunk. amount=', params.prepare.data.amount)
       const hexId = params.paymentId.toString('hex')
 
       let accountant = this.accountants.get(hexId)
@@ -39,7 +43,12 @@ class CogListener {
 
       // TODO: clean up after reject so we don't leak memory (very important
       // because cogs will run for a very long time)
-      return accountant.paymentHandler(accountant)
+      return accountant.paymentHandler(params)
     })
+
+    debug('connecting receiver')
+    await this.receiver.connect()
   }
 }
+
+module.exports = CogListener

@@ -2,9 +2,9 @@ const Koa = require('koa')
 const ILP = require('ilp')
 const router = require('koa-router')()
 const parser = require('koa-bodyparser')()
-const CogKoa = require('../src/koa-cog')
+const Cog = require('..')
 const app = new Koa()
-const cog = new CogKoa()
+const cog = new Cog.KoaCog()
 const debug = require('debug')('app')
 
 /*

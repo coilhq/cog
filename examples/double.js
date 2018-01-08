@@ -2,18 +2,17 @@ const Koa = require('koa')
 const ILP = require('ilp')
 const Router = require('koa-router')
 const Parser = require('koa-bodyparser')
-const CogKoa = require('../src/koa-cog')
-const client = require('../src/client')
+const Cog = require('..')
 
 const router = Router()
 const parser = Parser()
 const app = new Koa()
-const cog = new CogKoa()
+const cog = new Cog.KoaCog()
 
 const router2 = Router()
 const parser2 = Parser()
 const app2 = new Koa()
-const cog2 = new CogKoa()
+const cog2 = new Cog.KoaCog()
 
 router2.options('/', cog.options())
 router2.get('/', cog.paid(), async ctx => {
@@ -25,7 +24,7 @@ router2.get('/', cog.paid(), async ctx => {
 router.options('/', cog.options())
 router.get('/', cog.paid(), async ctx => {
   await ctx.accountant.awaitBalance(1000)
-  const response = await client.call({
+  const response = await Cog.Client.call({
     plugin: ctx.accountant,
     url: 'localhost:8091/',
     method: 'get',

@@ -1,6 +1,6 @@
-const { call } = require('../src/client')
+const Cog = require('..')
 
-call({
+Cog.Client.call({
   url: 'localhost:8090/',
   method: 'get',
   body: {}

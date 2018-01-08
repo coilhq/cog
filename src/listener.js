@@ -26,6 +26,10 @@ class CogListener {
     return accountant
   }
 
+  async cleanUpAccountant (id) {
+    // TODO
+  }
+
   getPskDetails () {
     return this.receiver.generateAddressAndSecret()
   }
@@ -37,9 +41,14 @@ class CogListener {
       const hexId = params.paymentId.toString('hex')
 
       let accountant = this.accountants.get(hexId)
-      if (!accountant) {
+      // should only allow accountants to be added via getAccountant
+      /* if (!accountant) {
         accountant = new CogAccountant({ plugin: this.plugin })
         this.accountants.set(hexId, accountant)
+      } */
+
+      if (!accountant) {
+        return params.reject('unexpected transfer.')
       }
 
       // TODO: clean up after reject so we don't leak memory (very important

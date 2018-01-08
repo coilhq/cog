@@ -2,26 +2,29 @@
 > A contract engine driven by streaming payments
 
 ```js
+const Koa = require('koa')
 const ILP = require('ilp')
-const { HttpCog } = require('cog')
-const receiver = require('ilp-plugin')
-const cog = new HttpCog({
-  port: 8080,
-  plugin: receiver
-})
+const router = require('koa-router')()
+const parser = require('koa-bodyparser')()
+const CogKoa = require('../src/koa-cog')
+const app = new Koa()
+const cog = new CogKoa()
+const payoutReceiver = process.env.PAYOUT_RECEIVER
 
-cog.listen((accountant) => {
-  await accountant.awaitBalance(1010)
-
-  const result = await agent
-    .get('paid.example.com')
-    .pay(accountant, 1000)
-
-  await ILP.SPSP.SendPayment(accountant, {
-    receiver: process.env.DEVELOPER_RECEIVER,
-    sourceAmount: 10
+router.options('/', cog.options())
+router.get('/', cog.paid(), async ctx => {
+  await ILP.SPSP.sendPayment(ctx.accountant, {
+    receiver: payoutReceiver,
+    sourceAmount: '1000',
+    sourceScale: 0,
   })
 
-  return result.body
+  ctx.body = { foo: 'bar' }
 })
+
+app
+  .use(parser)
+  .use(router.routes())
+  .use(router.allowedMethods())
+  .listen(8090)
 ```

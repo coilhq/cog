@@ -8,8 +8,9 @@ class CogListener {
   constructor (opts) {
     this.secret = crypto.randomBytes(32)
     // TODO: moneyd
+    const secret = crypto.randomBytes(16).toString('hex')
     this.plugin = (opts && opts.plugin) ||
-      new PluginBtp({ server: 'btp+ws://:secret@localhost:7768' })
+      new PluginBtp({ server: `btp+ws://:${secret}@localhost:7768` })
     this.accountants = new Map()
     this.receiver = new PSK2.Receiver(this.plugin, this.secret)
   }

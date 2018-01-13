@@ -47,6 +47,10 @@ async function call ({
       requestComplete = true
       return response
     })
+    .catch((e) => {
+      requestComplete = true
+      throw e
+    })
 
   while (!requestComplete) {
     // TODO: controls on speed and total amount?

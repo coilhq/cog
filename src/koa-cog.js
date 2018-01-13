@@ -46,11 +46,21 @@ class CogKoa {
       if (id.length !== 16) {
         ctx.throw(400, '`Pay-Token` must be 16 bytes. length=' +
           id.length + ' token=' + payToken)
+        return
       }
 
       debug('creating accountant. token=', payToken)
       ctx.accountant = await this.listener.getAccountant(id)
-      await next()
+
+      try {
+        await next()
+      } catch (e) {
+        debug('error in middleware. error=', e) 
+        await this.listener.cleanUpAccountant(id)
+        ctx.throw(500, 'contract error. error="' + e.message + '"')
+        return
+      }
+
       return this.listener.cleanUpAccountant(id)
     }
   }

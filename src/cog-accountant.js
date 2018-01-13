@@ -1,5 +1,6 @@
 const IlpPacket = require('ilp-packet')
 const EventEmitter = require('events')
+const debug = require('debug')('ilp-cog-accountant')
 
 class CogAccountant extends EventEmitter {
   constructor ({
@@ -36,6 +37,7 @@ class CogAccountant extends EventEmitter {
   }
 
   async awaitBalance (amount) {
+    debug('awaiting balance. amount=' + amount)
     if (this.balance >= amount) return
     return new Promise(resolve => {
       const handleNewBalance = (newBalance) => {
@@ -55,10 +57,12 @@ class CogAccountant extends EventEmitter {
     const parsedRequest = IlpPacket.deserializeIlpPacket(data)
     
     if (parsedRequest.type === IlpPacket.Type.TYPE_ILP_PREPARE) {
+      debug('sending prepare. amount=' + parsedRequest.data.amount)
       await this.awaitBalance(parsedRequest.data.amount)
       this.balance -= parsedRequest.data.amount
     }
 
+    debug('sending data')
     const response = await this.plugin.sendData(data)
     const parsedResponse = IlpPacket.deserializeIlpPacket(data)
 

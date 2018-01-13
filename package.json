@@ -10,12 +10,14 @@
     "ilp-plugin-btp": "^1.1.2",
     "ilp-protocol-ildcp": "^1.0.0",
     "ilp-psk2": "https://github.com/sharafian/ilp-psk2.git#bs-review-each-chunk",
-    "ilp": "^11.4.0",
+    "ilp": "https://github.com/interledgerjs/ilp.git#bs-payment-pointer",
     "koa-bodyparser": "^4.2.0",
     "koa": "^2.4.1",
     "koa-router": "^7.3.0"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "lodash": "^4.17.4"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },

@@ -3,7 +3,7 @@
 
 ```js
 const Koa = require('koa')
-const ILP = require('ilp')
+const SPSP = require('ilp-protocol-spsp')
 const router = require('koa-router')()
 const parser = require('koa-bodyparser')()
 const CogKoa = require('../src/koa-cog')
@@ -12,15 +12,13 @@ const cog = new CogKoa()
 
 router.options('/', cog.options())
 router.get('/', cog.paid(), async ctx => {
-  const quote = await ILP.SPSP.quote(cog.accountant, {
-    receiver: '$sharafian.com',
-    sourceAmount: '1000',
-    sourceScale: 0,
-  })
 
   // Before completing this call, the contract will wait
   // for 1000 to arrive in its account.
-  await ILP.SPSP.sendPayment(cog.accountant, quote)
+  await SPSP.pay(cog.accountant, {
+    receiver: '$sharafian.com',
+    sourceAmount: '1000'
+  })
 
   ctx.body = { foo: 'bar' }
 })

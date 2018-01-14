@@ -11,6 +11,7 @@
     "ilp-plugin-btp": "^1.1.2",
     "ilp-protocol-ildcp": "^1.0.0",
     "ilp-protocol-psk2": "https://github.com/sharafian/ilp-psk2",
+    "ilp-protocol-spsp": "github:sharafian/ilp-protocol-spsp",
     "koa": "^2.4.1",
     "koa-bodyparser": "^4.2.0",
     "koa-router": "^7.3.0"

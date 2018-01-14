@@ -9,15 +9,18 @@ const parser = require('koa-bodyparser')()
 const CogKoa = require('../src/koa-cog')
 const app = new Koa()
 const cog = new CogKoa()
-const payoutReceiver = process.env.PAYOUT_RECEIVER
 
 router.options('/', cog.options())
 router.get('/', cog.paid(), async ctx => {
-  await ILP.SPSP.sendPayment(ctx.accountant, {
-    receiver: payoutReceiver,
+  const quote = await ILP.SPSP.quote(cog.accountant, {
+    receiver: '$sharafian.com',
     sourceAmount: '1000',
     sourceScale: 0,
   })
+
+  // Before completing this call, the contract will wait
+  // for 1000 to arrive in its account.
+  await ILP.SPSP.sendPayment(cog.accountant, quote)
 
   ctx.body = { foo: 'bar' }
 })

@@ -1,7 +1,6 @@
 const crypto = require('crypto')
 const debug = require('debug')('ilp-cog-koa')
 const ILDCP = require('ilp-protocol-ildcp')
-const PSK2 = require('ilp-psk2')
 const CogListener = require('./listener')
 
 class CogKoa {

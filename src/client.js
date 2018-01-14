@@ -1,6 +1,7 @@
 const request = require('superagent')
-const PSK2 = require('ilp-psk2')
+const { sendSingleChunk } = require('ilp-protocol-psk2')
 const PluginBtp = require('ilp-plugin-btp')
+const debug = require('debug')('ilp-cog:client')
 const crypto = require('crypto')
 const { URL } = require('url')
 
@@ -33,6 +34,7 @@ async function call ({
     sourceAmount: 200,
     destinationAccount: payParams[1],
     sharedSecret: Buffer.from(payParams[2], 'base64'),
+    sequence: 0,
     minDestinationAmount: 0
   }
 
@@ -54,7 +56,13 @@ async function call ({
 
   while (!requestComplete) {
     // TODO: controls on speed and total amount?
-    await PSK2.sendSingleChunk(_plugin, senderParams)
+    try {
+      await sendSingleChunk(_plugin, senderParams)
+    } catch (e) {
+      debug('chunk rejected:', e)
+      break // TODO: break or keep trying until response?
+    }
+    senderParams.sequence ++
   }
 
   return requestPromise

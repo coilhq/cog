@@ -15,17 +15,18 @@ class CogAccountant extends EventEmitter {
   // TODO: arrow function
   async paymentHandler ({
     prepare,
-    accept,
-    reject
+    reject,
+    acceptSingleChunk
   }) {
     if (this.close) {
       reject('this contract has completed')
+      return
     }
 
     // TODO: bignumbers instead?
     this.balance += Number(prepare.amount)
     this.emit('_balance', this.balance)
-    await accept()
+    await acceptSingleChunk()
   }
 
   // we have this so the accountant can be used as a plugin

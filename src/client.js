@@ -35,7 +35,8 @@ async function call ({
     destinationAccount: payParams[1],
     sharedSecret: Buffer.from(payParams[2], 'base64'),
     sequence: 0,
-    minDestinationAmount: 0
+    minDestinationAmount: 0,
+    lastChunk: false
   }
 
   await _plugin.connect()

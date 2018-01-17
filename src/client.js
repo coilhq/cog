@@ -45,6 +45,7 @@ async function call ({
   const requestPromise = request
     [method.toLowerCase()](url)
     .set('Pay-Token', id.toString('base64'))
+    .set('Stream-Payment', true)
     .send(body)
     .then((response) => {
       requestComplete = true

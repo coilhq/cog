@@ -40,6 +40,13 @@ class CogKoa {
         return
       }
 
+      if (!ctx.get('Stream-Payment')) {
+        ctx.set('Pay', await this._getPskDetails())
+        ctx.status = 402
+        ctx.body = 'must specify Stream-Payment'
+        return
+      }
+
       debug('parsing pay-token. token=', payToken)
       const id = Buffer.from(payToken, 'base64')
       if (id.length !== 16) {

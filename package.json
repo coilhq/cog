@@ -1,5 +1,5 @@
 {
-  "name": "cog",
+  "name": "@sharafian/cog",
   "version": "0.0.1",
   "description": "> A contract engine driven by streaming payments",
   "main": "index.js",

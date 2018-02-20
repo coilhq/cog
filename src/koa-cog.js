@@ -9,25 +9,38 @@ class CogKoa {
     this.connected = false
   }
 
-  async _getPskDetails () {
+  async _getPskDetails (token) {
     if (!this.connected) {
       debug('connecting listener')
       await this.listener.listen()
       this.connected = true
     }
 
+    const id = Buffer.from(token, 'base64')
+    if (id.length !== 16) {
+      ctx.throw(400, '`Pay-Token` must be 16 bytes. length=' +
+        id.length + ' token=' + token)
+      return
+    }
+
     // TODO: only do this once
     debug('generating psk2 params')
-    const params = this.listener.getPskDetails()
+    const socket = this.listener.getSocket(id)
 
     return 'interledger-psk2 ' +
-      params.destinationAccount + ' ' +
-      params.sharedSecret.toString('base64')
+      socket.destinationAccount + ' ' +
+      socket.sharedSecret.toString('base64')
   }
 
   options () {
     return async (ctx, next) => {
-      ctx.set('Pay', await this._getPskDetails())
+      const payToken = ctx.get('Pay-Token')
+      if (!payToken) {
+        ctx.throw(400, 'must supply `Pay-Token` header.')
+        return
+      }
+
+      ctx.set('Pay', await this._getPskDetails(payToken))
       return next()
     }
   }
@@ -41,7 +54,7 @@ class CogKoa {
       }
 
       if (!ctx.get('Stream-Payment')) {
-        ctx.set('Pay', await this._getPskDetails())
+        ctx.set('Pay', await this._getPskDetails(payToken))
         ctx.status = 402
         ctx.body = 'must specify Stream-Payment'
         return
@@ -56,7 +69,13 @@ class CogKoa {
       }
 
       debug('creating accountant. token=', payToken)
-      ctx.accountant = await this.listener.getAccountant(id)
+      try {
+        ctx.accountant = await this.listener.getAccountant(id)
+      } catch (e) {
+        ctx.throw(420, 'accountant already exists for this token. ' +
+          'wait for existing command to finish.')
+        return
+      }
 
       try {
         await next()

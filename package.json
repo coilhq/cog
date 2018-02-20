@@ -10,7 +10,7 @@
     "ilp": "https://github.com/interledgerjs/ilp.git#bs-payment-pointer",
     "ilp-plugin-btp": "^1.1.2",
     "ilp-protocol-ildcp": "^1.0.0",
-    "ilp-protocol-psk2": "https://github.com/sharafian/ilp-psk2",
+    "ilp-protocol-paystream": "git+https://github.com/emschwartz/ilp-protocol-paystream.git",
     "ilp-protocol-spsp": "github:sharafian/ilp-protocol-spsp",
     "koa": "^2.4.1",
     "koa-bodyparser": "^4.2.0",

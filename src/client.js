@@ -1,5 +1,5 @@
 const request = require('superagent')
-const { sendSingleChunk } = require('ilp-protocol-psk2')
+const { createSocket } = require('ilp-protocol-paystream')
 const PluginBtp = require('ilp-plugin-btp')
 const debug = require('debug')('ilp-cog:client')
 const crypto = require('crypto')
@@ -11,6 +11,7 @@ async function call ({
   method,
   body
 }) {
+  const id = crypto.randomBytes(16).toString('base64')
   const secret = crypto.randomBytes(16).toString('hex')
   // TODO: moneyd
   const _plugin = plugin || new PluginBtp({
@@ -19,55 +20,33 @@ async function call ({
 
   const prelim = await request
     .options(url)
+    .set('Pay-Token', id)
     .send(body)
 
   const pay = prelim.headers.pay
   const payParams = pay.split(' ')
-  if (payParams[0] !== 'interledger-psk2') {
-    throw new Error('payment method is not psk2. method=' + payParams[0] +
+  if (payParams[0] !== 'interledger-paystream') {
+    throw new Error('payment method is not paystream. method=' + payParams[0] +
       ' pay="' + pay + '"')
-  }
-
-  const id = crypto.randomBytes(16)
-  const senderParams = {
-    id,
-    sourceAmount: 200,
-    destinationAccount: payParams[1],
-    sharedSecret: Buffer.from(payParams[2], 'base64'),
-    sequence: 0,
-    minDestinationAmount: 0,
-    lastChunk: false
   }
 
   await _plugin.connect()
 
-  let requestComplete = false
-  const requestPromise = request
+  const senderSocket = await createSocket({
+    plugin: _plugin,
+    destinationAccount: payParams[1],
+    sharedSecret: Buffer.from(payParams[2], 'base64')
+  })
+
+  // TODO: max amount to pay
+  senderSocket.setMinBalance('-Infinity')
+  senderSocket.setMaxBalance('0')
+
+  return request
     [method.toLowerCase()](url)
-    .set('Pay-Token', id.toString('base64'))
+    .set('Pay-Token', id)
     .set('Stream-Payment', true)
     .send(body)
-    .then((response) => {
-      requestComplete = true
-      return response
-    })
-    .catch((e) => {
-      requestComplete = true
-      throw e
-    })
-
-  while (!requestComplete) {
-    // TODO: controls on speed and total amount?
-    try {
-      await sendSingleChunk(_plugin, senderParams)
-    } catch (e) {
-      debug('chunk rejected:', e)
-      break // TODO: break or keep trying until response?
-    }
-    senderParams.sequence ++
-  }
-
-  return requestPromise
 }
 
 module.exports = {

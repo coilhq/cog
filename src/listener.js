@@ -1,4 +1,4 @@
-const { PaymentServer, createSocket } = require('.')
+const { PaymentServer } = require('ilp-protocol-paystream')
 const crypto = require('crypto')
 const CogAccountant = require('./cog-accountant')
 const PluginBtp = require('ilp-plugin-btp')

@@ -27,7 +27,7 @@ class CogKoa {
     debug('generating psk2 params')
     const socket = this.listener.getSocket(id)
 
-    return 'interledger-psk2 ' +
+    return 'interledger-paystream ' +
       socket.destinationAccount + ' ' +
       socket.sharedSecret.toString('base64')
   }

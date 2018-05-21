@@ -7,16 +7,15 @@
     "example": "examples"
   },
   "dependencies": {
-    "ilp": "https://github.com/interledgerjs/ilp.git#bs-payment-pointer",
-    "ilp-plugin-btp": "^1.1.2",
+    "ilp-plugin": "^3.1.1",
     "ilp-protocol-ildcp": "^1.0.0",
-    "ilp-protocol-psk2": "https://github.com/sharafian/ilp-psk2",
-    "ilp-protocol-spsp": "github:sharafian/ilp-protocol-spsp",
+    "ilp-protocol-stream": "^1.0.0",
     "koa": "^2.4.1",
     "koa-bodyparser": "^4.2.0",
     "koa-router": "^7.3.0"
   },
   "devDependencies": {
+    "ilp-protocol-spsp": "github:sharafian/ilp-protocol-spsp",
     "lodash": "^4.17.4"
   },
   "scripts": {

@@ -1,66 +1,65 @@
-const { createReceiver } = require('ilp-protocol-psk2')
+const { createServer } = require('ilp-protocol-stream')
 const crypto = require('crypto')
-const CogAccountant = require('./cog-accountant')
-const PluginBtp = require('ilp-plugin-btp')
 const debug = require('debug')('ilp-cog-listener')
+const EventEmitter = require('events')
 
-class CogListener {
+class CogListener extends EventEmitter {
   constructor (opts) {
-    this.secret = crypto.randomBytes(32)
-    // TODO: moneyd
-    const secret = crypto.randomBytes(16).toString('hex')
-    this.plugin = (opts && opts.plugin) ||
-      new PluginBtp({ server: `btp+ws://:${secret}@localhost:7768` })
-    this.accountants = new Map()
+    super()
+
+    this.plugin = (opts && opts.plugin) || require('ilp-plugin')()
+    this.streams = new Map()
     this.receiver = null
   }
 
-  async getAccountant (id) {
-    const hexId = id.toString('hex')
-    let accountant = this.accountants.get(hexId)
-    if (!accountant) {
-      accountant = new CogAccountant({ plugin: this.plugin })
-      this.accountants.set(hexId, accountant)
-    }
-
-    debug('returning accountant for', id)
-    return accountant
+  async getStream (id) {
+    return this.streams.get(id.toString('hex'))
   }
 
-  async cleanUpAccountant (id) {
-    // TODO
-    const hexId = id.toString('hex')
-    let accountant = this.accountants.get(hexId)
-    if (accountant) {
-      return accountant.disconnect()
+  async cleanUpStream (id) {
+    const stream = this.streams.get(id.toString('hex'))
+    if (stream) {
+      stream.end()
     }
   }
 
-  getPskDetails () {
-    return this.receiver.generateAddressAndSecret()
+  getDetails (id) {
+    return this.server.generateAddressAndSecret(id)
   }
 
   async listen (callback) {
     debug('registering payment handler')
-    this.receiver = await createReceiver({
-      plugin: this.plugin,
-      paymentHandler: async (params) => {
-        debug('got payment chunk. amount=' + params.prepare.amount)
-        const hexId = params.id.toString('hex')
-
-        let accountant = this.accountants.get(hexId)
-        if (!accountant) {
-          return params.reject('unexpected transfer.')
-        }
-
-        // TODO: clean up after reject so we don't leak memory (very important
-        // because cogs will run for a very long time)
-        return accountant.paymentHandler(params)
-      }
+    this.server = await createServer({
+      plugin: this.plugin
     })
 
-    // debug('connecting receiver')
-    // await this.receiver.connect()
+    server.on('connection', conn => {
+      let streamSet = false
+      const tag = conn.connectionTag.toString('hex')
+
+      if (this.streams.get(tag)) {
+        console.error('two connections on tag. tag=' + tag)
+        conn.end()
+        return
+      }
+
+      conn.on('stream', stream => {
+        // make sure that there is only one stream
+        if (streamSet) {
+          console.error('opened two streams on connection. tag=' + tag)
+          stream.end()
+          conn.end()
+          return
+        }
+
+        streamSet = true
+
+        this.streams.set(tag, stream)
+        this.emit('_' + tag)
+
+        stream.on('end', this.streams.delete(stream))
+      })
+    })
   }
 }
 

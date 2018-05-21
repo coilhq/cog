@@ -3,16 +3,15 @@
 
 ```js
 const Koa = require('koa')
+const KoaCog = require('koa-cog')
 const SPSP = require('ilp-protocol-spsp')
 const router = require('koa-router')()
 const parser = require('koa-bodyparser')()
-const CogKoa = require('../src/koa-cog')
-const CogAccountant = require('../src/cog-accountant')
 const app = new Koa()
-const cog = new CogKoa()
+const cog = new KoaCog()
 
 router.get('/', cog.paid(), async ctx => {
-  const accountant = new CogAccountant(ctx.ilpStream)
+  const accountant = new KoaCog.Accountant(ctx.ilpStream)
 
   // Before completing this call, the contract will wait
   // for 1000 to arrive in its account.

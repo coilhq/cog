@@ -1,18 +1,15 @@
 const { createServer } = require('ilp-protocol-stream')
 const crypto = require('crypto')
 const debug = require('debug')('ilp-cog-listener')
-const EventEmitter = require('events')
 
-class CogListener extends EventEmitter {
+class CogListener {
   constructor (opts) {
-    super()
-
     this.plugin = (opts && opts.plugin) || require('ilp-plugin')()
     this.streams = new Map()
     this.receiver = null
   }
 
-  async getStream (id) {
+  getStream (id) {
     return this.streams.get(id.toString('hex'))
   }
 
@@ -24,7 +21,7 @@ class CogListener extends EventEmitter {
   }
 
   getDetails (id) {
-    return this.server.generateAddressAndSecret(id)
+    return this.server.generateAddressAndSecret(id.toString('hex'))
   }
 
   async listen (callback) {
@@ -33,9 +30,9 @@ class CogListener extends EventEmitter {
       plugin: this.plugin
     })
 
-    server.on('connection', conn => {
+    this.server.on('connection', conn => {
       let streamSet = false
-      const tag = conn.connectionTag.toString('hex')
+      const tag = conn.connectionTag
 
       if (this.streams.get(tag)) {
         console.error('two connections on tag. tag=' + tag)
@@ -55,9 +52,7 @@ class CogListener extends EventEmitter {
         streamSet = true
 
         this.streams.set(tag, stream)
-        this.emit('_' + tag)
-
-        stream.on('end', this.streams.delete(stream))
+        stream.on('end', () => this.streams.delete(stream))
       })
     })
   }

@@ -17,7 +17,7 @@ class CogKoa {
     }
 
     // TODO: only do this once
-    debug('generating stream params. id=' + id)
+    debug('generating stream params. id=' + id.toString('hex'))
     const params = this.listener.getDetails(id)
 
     return 'interledger-stream ' +
@@ -65,7 +65,8 @@ class CogKoa {
         return
       }
 
-      debug('got stream. id=', id)
+      debug('got stream. id=', id.toString('hex'))
+      debug('stream=', stream)
       ctx.ilpStream = stream
 
       try {

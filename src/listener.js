@@ -55,7 +55,10 @@ class CogListener {
 
         // signal to the other side that we've gotten their stream
         stream.write(Buffer.from([ 0xff ]))
-        stream.on('end', () => this.streams.delete(stream))
+        stream.on('end', () => {
+          this.streams.delete(stream)
+          conn.end()
+        })
       })
     })
   }

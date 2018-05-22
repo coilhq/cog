@@ -5,17 +5,13 @@ class CogAccountant {
   constructor (stream, plugin) {
     this.stream = stream
     this.plugin = plugin || require('ilp-plugin')()
-    this.balance = 0
+    this.surplus = 0
   }
 
   // we have this so the accountant can be used as a plugin
   async sendTransfer () {}
   async connect () {
     await this.plugin.connect()
-  }
-
-  getBalance () {
-    return this.balance
   }
 
   // TODO: arrow function
@@ -25,20 +21,20 @@ class CogAccountant {
     
     if (parsedRequest.type === IlpPacket.Type.TYPE_ILP_PREPARE) {
       debug('sending prepare. amount=' + parsedRequest.data.amount)
-      await this.stream.receiveTotal(this.stream.receiveMax + parsedRequest.data.amount)
+
+      const amount = Math.max(0, parsedRequest.data.amount - this.surplus)
+      this.surplus = Math.max(0, this.surplus - parsedRequest.data.amount)
+
+      await this.stream.receiveTotal(this.stream.receiveMax + amount)
     }
 
     debug('sending data')
     const response = await this.plugin.sendData(data)
     const parsedResponse = IlpPacket.deserializeIlpPacket(data)
 
-    // TODO: account for an invalid non-reject response?
-    // TODO: support any other reject types?
-    /* TODO: how to lower the receive max after this?
     if (parsedResponse.type === IlpPacket.Type.TYPE_ILP_REJECT) {
-      this.balance += parsedRequest.data.amount
-      this.emit('_balance', this.balance)
-    }*/
+      this.surplus += parsedRequest.data.amount
+    }
 
     return response
   }

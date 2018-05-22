@@ -2,16 +2,17 @@ const IlpPacket = require('ilp-packet')
 const debug = require('debug')('ilp-cog-accountant')
 
 class CogAccountant {
-  constructor (stream) {
-    super()
-
+  constructor (stream, plugin) {
     this.stream = stream
+    this.plugin = plugin || require('ilp-plugin')()
     this.balance = 0
   }
 
   // we have this so the accountant can be used as a plugin
   async sendTransfer () {}
-  async connect () {}
+  async connect () {
+    await this.plugin.connect()
+  }
 
   getBalance () {
     return this.balance

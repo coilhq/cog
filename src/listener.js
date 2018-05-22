@@ -52,6 +52,9 @@ class CogListener {
         streamSet = true
 
         this.streams.set(tag, stream)
+
+        // signal to the other side that we've gotten their stream
+        stream.write(Buffer.from([ 0xff ]))
         stream.on('end', () => this.streams.delete(stream))
       })
     })

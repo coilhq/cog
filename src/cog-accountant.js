@@ -1,5 +1,6 @@
 const IlpPacket = require('ilp-packet')
 const debug = require('debug')('ilp-cog-accountant')
+const DEFAULT_PAYMENT_TIMEOUT = 5000
 
 class CogAccountant {
   constructor (stream, plugin) {
@@ -25,7 +26,13 @@ class CogAccountant {
       const amount = Math.max(0, parsedRequest.data.amount - this.surplus)
       this.surplus = Math.max(0, this.surplus - parsedRequest.data.amount)
 
-      await this.stream.receiveTotal(this.stream.receiveMax + amount)
+      let timeout
+      await Promise.race([
+        this.stream.receiveTotal(this.stream.receiveMax + amount),
+        new Promise(resolve => timeout = setTimeout(resolve, DEFAULT_PAYMENT_TIMEOUT))
+      ])
+
+      clearTimeout(timeout)
     }
 
     debug('sending data')

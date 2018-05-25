@@ -4,7 +4,7 @@ const Boom = require('boom')
 
 const plugin = {}
 
-plugin.register = async (server, options, next) {
+plugin.register = async (server, options, next) => {
   debug('connecting listener')
   const listener = new CogListener(options)
   await listener.listen()
@@ -20,17 +20,17 @@ plugin.register = async (server, options, next) {
   server.decorate('request', 'ilpStream', function () {
     const payToken = this.headers['pay-token']
     if (!payToken) {
-      throw new Boom.badRequest('must supply `Pay-Token` header.')
+      throw Boom.badRequest('must supply `Pay-Token` header.')
     }
 
     const id = Buffer.from(payToken, 'base64')
     if (id.length !== 16) {
-      throw new Boom.badRequest('`Pay-Token` must be 16 bytes base64.')
+      throw Boom.badRequest('`Pay-Token` must be 16 bytes base64.')
     }
 
     const stream = listener.getStream(id)
     if (!stream) {
-      const error = new Boom.paymentRequired()
+      const error = Boom.paymentRequired()
       error.output.headers['Pay'] = getDetails(id)
       throw error
     }
@@ -41,7 +41,7 @@ plugin.register = async (server, options, next) {
   })
 }
 
-plugin.pkg = require('./package.json')
+plugin.pkg = require('../package.json')
 
 module.exports = {
   plugin,

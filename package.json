@@ -1,6 +1,6 @@
 {
   "name": "@sharafian/cog",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "> A contract engine driven by streaming payments",
   "main": "index.js",
   "directories": {

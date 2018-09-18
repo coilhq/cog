@@ -6,6 +6,7 @@ const CogListener = require('./listener')
 class CogKoa {
   constructor (opts) {
     this.listener = new CogListener(opts)
+    this.cors = opts && opts.cors
     this.connected = false
   }
 
@@ -61,6 +62,11 @@ class CogKoa {
       const stream = this.listener.getStream(id)
       if (!stream) {
         ctx.set('Pay', await this._getDetails(id))
+        if (this.cors) {
+          ctx.set('Access-Control-Allow-Origin', this.cors.origin)
+          ctx.set('Access-Control-Allow-Headers', '*')
+          ctx.set('Access-Control-Expose-Headers', 'Pay')
+        }
         ctx.status = 402
         return
       }

@@ -19,31 +19,43 @@ class CogAccountant {
   async sendData (data) {
     // TODO: support non-ILP data?
     const parsedRequest = IlpPacket.deserializeIlpPacket(data)
-    
+
+    const response = await this.plugin.sendData(data)
+    const parsedResponse = IlpPacket.deserializeIlpPacket(response)
+
+    if (parsedResponse.type === IlpPacket.Type.TYPE_ILP_REJECT) {
+      return response
+    }
+
+    if (parsedResponse.type !== IlpPacket.Type.TYPE_ILP_FULFILL) {
+      return response
+    }
+
     if (parsedRequest.type === IlpPacket.Type.TYPE_ILP_PREPARE) {
       debug('sending prepare. amount=' + parsedRequest.data.amount)
+      if (parsedRequest.data.amount === '0') {
+        return response
+      }
 
       const amount = Math.max(0, parsedRequest.data.amount - this.surplus)
       this.surplus = Math.max(0, this.surplus - parsedRequest.data.amount)
 
-      let timeout
-      await Promise.race([
-        this.stream.receiveTotal(this.stream.receiveMax + amount),
-        new Promise(resolve => timeout = setTimeout(resolve, DEFAULT_PAYMENT_TIMEOUT))
-      ])
+      debug('awaiting.' +
+        ' receiveTotal=' + (Number(this.stream.receiveMax) + Number(amount)) +
+        ' totalReceived=' + this.stream.totalReceived)
 
-      clearTimeout(timeout)
-    }
-
-    debug('sending data')
-    const response = await this.plugin.sendData(data)
-    const parsedResponse = IlpPacket.deserializeIlpPacket(data)
-
-    if (parsedResponse.type === IlpPacket.Type.TYPE_ILP_REJECT) {
-      this.surplus += parsedRequest.data.amount
+      await this.stream.receiveTotal(Number(this.stream.receiveMax) + Number(amount), DEFAULT_PAYMENT_TIMEOUT),
     }
 
     return response
+  }
+
+  registerDataHandler (handler) {
+    this.plugin.registerDataHandler(handler)
+  }
+
+  deregisterDataHandler () {
+    this.plugin.deregisterDataHandler()
   }
 
   async disconnect () {}
